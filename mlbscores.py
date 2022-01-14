@@ -15,7 +15,7 @@ USE_CERTIFI = True
 
 try:
     import certifi
-except:
+except ImportError:
     USE_CERTIFI = False
     urllib3.disable_warnings()
 
@@ -25,14 +25,20 @@ try:
         bestteams = [line.rstrip() for line in t.readlines()]
         t.close()
 except FileNotFoundError:
-    bestteams = ['CHC']
+    bestteams = ['SEA']
 
 # Switch from previous scores to today's scores at 10AM
 daytime_rollover = 10
 
-base_scoreboard_url = "https://statsapi.mlb.com/api/v1/schedule?sportId=1,51&date=%04d-%02d-%02d&leagueId=103,104,420&hydrate=team,linescore(matchup,runners),flags,person,probablePitcher,stats,game(summary)&useLatestGames=false&language=en"
-base_boxscore_url   = "http://statsapi.mlb.com/api/v1/game/%s/boxscore"
-base_standings_uri  = "https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=%4s&standingsTypes=regularSeason,springTraining&hydrate=division,conference,league"
+base_scoreboard_url = "https://statsapi.mlb.com/api/v1/schedule?sportId=1," \
+                      "51&date=%04d-%02d-%02d&leagueId=103,104," \
+                      "420&hydrate=team,linescore(matchup,runners),flags," \
+                      "person,probablePitcher,stats," \
+                      "game(summary)&useLatestGames=false&language=en "
+base_boxscore_url = "http://statsapi.mlb.com/api/v1/game/%s/boxscore"
+base_standings_uri = "https://statsapi.mlb.com/api/v1/standings?leagueId" \
+                     "=103,104&season=%4s&standingsTypes=regularSeason," \
+                     "springTraining&hydrate=division,conference,league "
 
 
 class gameDay:
@@ -71,7 +77,6 @@ class gameDay:
             gameData = rawJSON["dates"][0]["games"]
         except:
             sys.stdout.write("\nNo games scheduled for " + self.gameDayDate.strftime("%A %B %d, %Y") + "\n\n")
-            # raise Exception("No games scheduled for " + self.gameDayDate.strftime("%A %B %d, %Y") )
             gameData = {}
         return gameData
 
@@ -83,7 +88,9 @@ class gameDay:
 
     def formScoreBoardURL(self):
         return base_scoreboard_url %\
-             (self.gameDayDate.year, self.gameDayDate.month, self.gameDayDate.day)
+             (self.gameDayDate.year,
+              self.gameDayDate.month,
+              self.gameDayDate.day)
 
     def fillGameData(self, gameJSON):
         aGame = game()
@@ -155,7 +162,8 @@ class game:
         except:
             self.gameStatusReason = ""
         try:
-            self.currentInningOrdinal = jsonData['linescore']['currentInningOrdinal']
+            self.currentInningOrdinal =\
+                jsonData['linescore']['currentInningOrdinal']
         except:
             self.currentInningOrdinal = ""
         self.gameTime = self.extractGameTime(jsonData)
@@ -180,7 +188,7 @@ class game:
 
     def extractGameTime(self, jsonData):
         try:
-            #  Cast JSON time format to datime object
+            #  Cast JSON time format to datetime object
             #  Example "2019-03-03T18:05:00Z"
             gtime = datetime.datetime.strptime(jsonData["gameDate"], "%Y-%m-%dT%H:%M:%SZ")
             # Convert to local time zone
@@ -225,7 +233,7 @@ class game:
         loader = JSONloader(boxscore_url)
         jsondata = loader.loadJSON()
         if len(jsondata.keys()) == 0:
-            sys.stdout.write("   No box score data available                \n")
+            sys.stdout.write("No box score data available                \n")
         return jsondata
 
     def formBoxScoreURL(self):
@@ -253,12 +261,12 @@ class game:
         return isWaiting
 
     def printTimeAndPitcher(self):
-        sys.stdout.write("  %s" % (self.gameTime))
-        sys.stdout.write("%12s (%s) vs %12s (%s)" % ( \
-                     self.teams['away'].probablePitcher.lastName,\
-                     self.teams['away'].probablePitcher.stats['era'],\
-                     self.teams['home'].probablePitcher.lastName, \
-                     self.teams['home'].probablePitcher.stats['era']) )
+        sys.stdout.write(f"  {self.gameTime}")
+        sys.stdout.write("%12s (%s) vs %12s (%s)" % (
+                     self.teams['away'].probablePitcher.lastName,
+                     self.teams['away'].probablePitcher.stats['era'],
+                     self.teams['home'].probablePitcher.lastName,
+                     self.teams['home'].probablePitcher.stats['era']))
 
     def printGameUpdate(self):
         if self.isInProgress():
@@ -268,7 +276,8 @@ class game:
         self.printScore()
 
     def printProgress(self):
-        sys.stdout.write("  %3s %-9s" % (self.inningState, self.currentInningOrdinal)) 
+        sys.stdout.write(
+            f"  {self.inningState:>3} {self.currentInningOrdinal:<9}")
 
     def printStatus(self):
         self.printStatusPrefix()
@@ -276,10 +285,10 @@ class game:
             self.printStatusReason()
 
     def printStatusPrefix(self):
-        sys.stdout.write("  %-13s" % (self.gameStatus))
+        sys.stdout.write(f"  {self.gameStatus:<13}")
 
     def printStatusReason(self):
-        sys.stdout.write("  (%s)" % (self.gameStatusReason))
+        sys.stdout.write(f"  ({self.gameStatusReason})")
 
     def isInProgress(self):
         return self.gameStatus == 'In Progress'
@@ -335,27 +344,27 @@ class gameTeam:
         self.hits = 0
         self.players = {'batters': [], 'pitchers': []}
         self.boxStatKeys = {
-            'batters': ['plateAppearances', 'hits', 'baseOnBalls', \
-                        'runs', 'homeRuns', 'strikeOuts', 'avg', 'obp', 'ops'],  \
-            'pitchers': ['inningsPitched', 'pitchesThrown', 'strikeOuts',\
+            'batters': ['plateAppearances', 'hits', 'baseOnBalls',
+                        'runs', 'homeRuns', 'strikeOuts', 'avg', 'obp', 'ops'],
+            'pitchers': ['inningsPitched', 'pitchesThrown', 'strikeOuts',
                          'hits', 'baseOnBalls', 'runs', 'homeRuns', 'era']}
 
         self.boxSumStatKeys = {
-            'batters': ['plateAppearances', 'hits', 'baseOnBalls', \
-                        'runs', 'homeRuns', 'strikeOuts'],  \
-            'pitchers': ['pitchesThrown', 'strikeOuts',\
+            'batters': ['plateAppearances', 'hits', 'baseOnBalls',
+                        'runs', 'homeRuns', 'strikeOuts'],
+            'pitchers': ['pitchesThrown', 'strikeOuts',
                          'hits', 'baseOnBalls', 'runs', 'homeRuns']}
 
-        self.boxScoreHeaderFormatString = { \
-            'batters':  "   %-20s  PA   H  BB   R  HR  SO   AVG     OBP    OPS\n", \
+        self.boxScoreHeaderFormatString = {
+            'batters':  "   %-20s  PA   H  BB   R  HR  SO   AVG     OBP    OPS\n",
             'pitchers': "   %-20s   IP  PC SO  H BB  R HR   ERA\n"}
 
-        self.boxScoreFormatString = {\
-            'batters':  "%-23s %3d %3d %3d %3d %3d %3d  %5.3f  %5.3f  %5.3f\n", \
+        self.boxScoreFormatString = {
+            'batters':  "%-23s %3d %3d %3d %3d %3d %3d  %5.3f  %5.3f  %5.3f\n",
             'pitchers': "   %-20s %4.1f %3d %2d %2d %2d %2d %2d %5.2f\n"}
 
-        self.boxScoreFooterFormatString = { \
-            'batters' : "   %-20s %3d %3d %3d %3d %3d %3d\n\n", \
+        self.boxScoreFooterFormatString = {
+            'batters' : "   %-20s %3d %3d %3d %3d %3d %3d\n\n",
             'pitchers': "   %-20s      %3d %2d %2d %2d %2d %2d\n\n"}
 
     def unpackJSON(self, jsonData):
@@ -419,8 +428,8 @@ class gameTeam:
         self.printNBlankInnings(nBlanks=inningsWithoutData)
 
     def printHRE(self):
-        sys.stdout.write("| %2d %2d %2d\n" % \
-                         (self.getTotalHits(), self.getTotalRuns(), \
+        sys.stdout.write("| %2d %2d %2d\n" %
+                         (self.getTotalHits(), self.getTotalRuns(),
                           self.getTotalErrors()))
 
     def printNBlankInnings(self, nBlanks):
@@ -479,8 +488,8 @@ class player:
 class pitcher(player):
     def __init__(self):
         super(pitcher, self).__init__()
-        self.stats = {"pitchesThrown": 0, "inningsPitched": 0, \
-                      "strikeOuts": 0, "hits": 0, "baseOnBalls": 0, \
+        self.stats = {"pitchesThrown": 0, "inningsPitched": 0,
+                      "strikeOuts": 0, "hits": 0, "baseOnBalls": 0,
                       "runs": 0, "homeRuns": 0, "era": 0.0}
 
     def loadStats(self, json):
@@ -490,7 +499,7 @@ class pitcher(player):
         self.loadDerivedStats()
 
     def loadGameStats(self, jsonData):
-        gameStatKeys = ['pitchesThrown', 'inningsPitched', 'strikeOuts',\
+        gameStatKeys = ['pitchesThrown', 'inningsPitched', 'strikeOuts',
                         'hits', 'baseOnBalls', 'runs', 'homeRuns']
         gameStatType = [int, float, int, int, int, int, int]
         for key, keyType in zip(gameStatKeys, gameStatType):
@@ -518,10 +527,10 @@ class pitcher(player):
 class batter(player):
     def __init__(self):
         super(batter, self).__init__()
-        self.stats = {"atBats": 0, "hits": 0, "baseOnBalls": 0, \
-                      "runs": 0, "homeRuns": 0, "strikeOuts": 0, \
-                      "hitByPitch": 0, "sacFlies": 0, "sacBunts": 0, \
-                      "plateAppearances": 0,\
+        self.stats = {"atBats": 0, "hits": 0, "baseOnBalls": 0,
+                      "runs": 0, "homeRuns": 0, "strikeOuts": 0,
+                      "hitByPitch": 0, "sacFlies": 0, "sacBunts": 0,
+                      "plateAppearances": 0,
                       "avg": 0.0, "obp": 0.0, "slg": 0.0, "ops": 0.0}
         self.position = ""
 
@@ -533,7 +542,7 @@ class batter(player):
         self.loadDerivedStats()
 
     def loadGameStats(self, jsonData):
-        gameStatKeys = ["atBats", "hits", "baseOnBalls", "runs", "homeRuns",\
+        gameStatKeys = ["atBats", "hits", "baseOnBalls", "runs", "homeRuns",
                         "strikeOuts", "hitByPitch", "sacFlies", "sacBunts"]
         gameStatType = [int, int, int, int, int, int, int, int, int]
         for key, keyType in zip(gameStatKeys, gameStatType):
@@ -563,7 +572,7 @@ class batter(player):
         self.stats['ops'] = self.stats['obp'] + self.stats['slg']
 
     def setPlateAppearances(self):
-        plateAppearanceKeys = ['atBats', 'baseOnBalls', 'hitByPitch',\
+        plateAppearanceKeys = ['atBats', 'baseOnBalls', 'hitByPitch',
                                'sacFlies', 'sacBunts']
         totalPlateAppearances = sum([self.stats[k] for k in plateAppearanceKeys])
         self.stats['plateAppearances'] = totalPlateAppearances
@@ -574,9 +583,12 @@ class batter(player):
 
 class standings:
     def __init__(self):
-        self.divisionOrder = \
-         [u'American League East', u'American League Central',u'American League West',\
-          u'National League East',  u'National League Central', u'National League West']
+        self.divisionOrder = [u'American League East',
+                              u'American League Central',
+                              u'American League West',
+                              u'National League East',
+                              u'National League Central',
+                              u'National League West']
         self.divisions = {}
 
         # Set up some arrays in a dictionary for team data
@@ -603,7 +615,8 @@ class standings:
     def getRecordsFromURI(self, uri):
         standingsjson = ''
         if USE_CERTIFI:
-            standingsjson = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where()).request('GET', uri)
+            standingsjson = urllib3.PoolManager(cert_reqs='CERT_REQUIRED',
+                                                ca_certs=certifi.where()).request('GET', uri)
         else:
             standingsjson = urllib3.PoolManager().request('GET', uri)
 
@@ -645,12 +658,14 @@ class standings:
             thisTeam.wcgb = '-'
 
         try:
-            thisTeam.last10wins = int(teamData['records']['splitRecords'][4]['wins'])
+            thisTeam.last10wins = int(teamData['records']
+                                      ['splitRecords'][4]['wins'])
         except:
             thisTeam.last10wins = 0
 
         try:
-            thisTeam.last10losses = int(teamData['records']['splitRecords'][4]['losses'])
+            thisTeam.last10losses = int(teamData['records']
+                                        ['splitRecords'][4]['losses'])
         except:
             thisTeam.last10losses = 0
 
@@ -710,8 +725,8 @@ class seasonTeam:
         sys.stdout.write(self.standingFormatString % standingVals)
 
     def formStandingTuple(self):
-        standingTuple = (self.name, self.wins, self.losses, \
-                         self.winningPercentage, self.gb, self.wcgb,\
+        standingTuple = (self.name, self.wins, self.losses,
+                         self.winningPercentage, self.gb, self.wcgb,
                          self.last10wins, self.last10losses, self.streakCode)
         return standingTuple
 
@@ -722,7 +737,8 @@ class JSONloader():
 
     def loadJSON(self):
         if USE_CERTIFI:
-            jsondata = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where()).request('GET', self.uri)
+            jsondata = urllib3.PoolManager(cert_reqs='CERT_REQUIRED',
+                                           ca_certs=certifi.where()).request('GET', self.uri)
         else:
             jsondata = urllib3.PoolManager().request('GET', self.uri)
         try:
@@ -746,18 +762,56 @@ def getExplicitTeams(passedTeams):
 
 
 def configureArgParser():
-    argparser = argparse.ArgumentParser(prog="mlbscores", description="MLB scores utility")
+    argparser = argparse.ArgumentParser(prog="mlbscores",
+                                        description="MLB scores utility")
 
     # FIXME add in option for arbitrary day offset and specific dates?
-    argparser.add_argument("-b",  action="store_true",  dest="boxscore",  help="Show boxscore output for best games")
-    argparser.add_argument("-c",  action="store_true",  dest="bestteams", help="Choose team to feature in schedule and save to file")
-    argparser.add_argument("-f",  action="store_true",  dest="full",      help="Show full output for all games")
-    argparser.add_argument("-s",  action="store_true",  dest="standings", help="Show current standings")
-    argparser.add_argument("teams", help="Show explicit teams only specified by space separated list of case insensitive abbreviated names  e.g. chc coL SF", nargs="*")
+    argparser.add_argument("-b",
+                           action="store_true",
+                           dest="boxscore",
+                           help="Show boxscore output for best games"
+                           )
+    argparser.add_argument("-c",
+                           action="store_true",
+                           dest="bestteams",
+                           help="Choose team to feature in"
+                                "schedule and save to file"
+                           )
+    argparser.add_argument("-f",
+                           action="store_true",
+                           dest="full",
+                           help="Show full output for all games"
+                           )
+    argparser.add_argument("-s",
+                           action="store_true",
+                           dest="standings",
+                           help="Show current standings"
+                           )
+    argparser.add_argument("teams",
+                           help="Show explicit teams only specified by space "
+                                "separated list of case insensitive "
+                                "abbreviated names  e.g. chc coL SF",
+                           nargs="*"
+                           )
     argtgroup = argparser.add_mutually_exclusive_group()
-    argtgroup.add_argument("-y",  action="store_const", dest="dayoffset", const=-1, help="Show for yesterday")
-    argtgroup.add_argument("-t",  action="store_const", dest="dayoffset", const=1, help="Show for tomorrow")
-    argtgroup.add_argument("-tt", action="store_const", dest="dayoffset", const=2, help="Show for two days from now")
+    argtgroup.add_argument("-y",
+                           action="store_const",
+                           dest="dayoffset",
+                           const=-1,
+                           help="Show for yesterday"
+                           )
+    argtgroup.add_argument("-t",
+                           action="store_const",
+                           dest="dayoffset",
+                           const=1,
+                           help="Show for tomorrow"
+                           )
+    argtgroup.add_argument("-tt",
+                           action="store_const",
+                           dest="dayoffset",
+                           const=2,
+                           help="Show for two days from now"
+                           )
 
     return argparser
 

@@ -321,7 +321,8 @@ class game:
         sys.stdout.write("    ")
         for i in range(inningsToPrint):
             sys.stdout.write("%2d " % (i+1))
-        sys.stdout.write("|  H  R  E\n")
+        # sys.stdout.write("|  H  R  E\n")
+        sys.stdout.write("|  R  H  E\n")
 
     def printLineScoreFooter(self):
         sys.stdout.write("\n")
@@ -420,12 +421,18 @@ class gameTeam:
     def printLineScore(self, nInningsToPrint):
         sys.stdout.write("%-4s" % self.nameAbbreviation)
         self.printInningRuns(nInningsToPrint)
-        self.printHRE()
+        # self.printHRE()
+        self.printRHE()
 
     def printInningRuns(self, nInningsToPrint):
         inningsWithoutData = nInningsToPrint - self.getLineScoreLength()
         self.printInningRunsWithData()
         self.printNBlankInnings(nBlanks=inningsWithoutData)
+
+    def printRHE(self):
+        sys.stdout.write("| %2d %2d %2d\n" %
+                         (self.getTotalRuns(), self.getTotalHits(),
+                          self.getTotalErrors()))
 
     def printHRE(self):
         sys.stdout.write("| %2d %2d %2d\n" %

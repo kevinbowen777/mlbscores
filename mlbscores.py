@@ -769,58 +769,66 @@ def getExplicitTeams(passedTeams):
 
 
 def configureArgParser():
-    argparser = argparse.ArgumentParser(prog="mlbscores",
-                                        description="MLB scores utility")
-
+    parser = argparse.ArgumentParser(
+            prog="mlbscores",
+            description="MLB scores utility",
+            suggest_on_error=True,
+    )
+    parser.color = True
     # FIXME add in option for arbitrary day offset and specific dates?
-    argparser.add_argument("-b",
+    parser.add_argument("-b",
                            action="store_true",
                            dest="boxscore",
-                           help="Show boxscore output for best games"
+                           help="Show boxscore for best games"
                            )
-    argparser.add_argument("-c",
+    parser.add_argument("-c",
                            action="store_true",
                            dest="bestteams",
-                           help="Choose team to feature in"
+                           help="Choose team to feature in "
                                 "schedule and save to file"
                            )
-    argparser.add_argument("-f",
+    parser.add_argument("-f",
                            action="store_true",
                            dest="full",
                            help="Show full output for all games"
                            )
-    argparser.add_argument("-s",
+    parser.add_argument("-s",
                            action="store_true",
                            dest="standings",
-                           help="Show current standings"
+                           help="Show current team standings"
                            )
-    argparser.add_argument("teams",
-                           help="Show explicit teams only specified by space "
-                                "separated list of case insensitive "
-                                "abbreviated names  e.g. chc coL SF",
+    parser.add_argument("teams",
+                           help="Show only specific team games (e.g. "
+                                "chc coL SF, a space separated/case "
+                                "insensitive list of abbreviated names) ",
                            nargs="*"
                            )
-    argtgroup = argparser.add_mutually_exclusive_group()
+    parser.add_argument("-v",
+                        "--version",
+                        action="version",
+                        version="%(prog)s 0.1.0"
+                        )
+    argtgroup = parser.add_mutually_exclusive_group()
     argtgroup.add_argument("-y",
                            action="store_const",
                            dest="dayoffset",
                            const=-1,
-                           help="Show for yesterday"
+                           help="Show yesterday's game results"
                            )
     argtgroup.add_argument("-t",
                            action="store_const",
                            dest="dayoffset",
                            const=1,
-                           help="Show for tomorrow"
+                           help="Show schedule for tomorrow's games"
                            )
     argtgroup.add_argument("-tt",
                            action="store_const",
                            dest="dayoffset",
                            const=2,
-                           help="Show for two days from now"
+                           help="Show schedule for games two days from now"
                            )
 
-    return argparser
+    return parser
 
 
 def main(argv):

@@ -3,8 +3,7 @@
 # mlb scores and standing utility
 
 import argparse
-import datetime
-from datetime import timezone
+import datetime as dt
 import json
 import os
 import sys
@@ -27,8 +26,8 @@ try:
 except FileNotFoundError:
     bestteams = ['SEA']
 
-# Switch from previous scores to today's scores at 10AM
-daytime_rollover = 10
+# Switch from previous day's scores to today's scores at 6AM local time
+daytime_rollover = 6
 
 base_scoreboard_url = "https://statsapi.mlb.com/api/v1/schedule?sportId=1," \
                       "51&date=%04d-%02d-%02d&leagueId=103,104," \
@@ -45,7 +44,7 @@ class gameDay:
     def __init__(self, dayOffset=0):
         self.games = []
         self.bestGames = []
-        self.gameDayDate = datetime.datetime.now()
+        self.gameDayDate = dt.datetime.now()
         self.loadGameData(dayOffset)
 
     def loadGameData(self, dayOffset):
@@ -57,7 +56,7 @@ class gameDay:
             self.fillGameData(aGame)
 
     def setScoreboardDate(self, offset):
-        now = datetime.datetime.now()
+        now = dt.datetime.now()
         rolledOverDate = self.modifyDateForRollover(now)
         dateForScoreboard = self.modifyDateForOffset(rolledOverDate, offset)
         self.gameDayDate = dateForScoreboard
@@ -65,11 +64,11 @@ class gameDay:
     def modifyDateForRollover(self, date):
         rolledOverDate = date
         if date.hour < daytime_rollover:
-            rolledOverDate = date - datetime.timedelta(1)
+            rolledOverDate = date - dt.timedelta(1)
         return rolledOverDate
 
     def modifyDateForOffset(self, date, offset):
-        return date + datetime.timedelta(1)*offset
+        return date + dt.timedelta(1)*offset
 
     def tryToGetJSON(self):
         rawJSON = self.getRecordsFromURL()
@@ -146,7 +145,7 @@ class gameDay:
 class game:
     def __init__(self):
         self.gamePk = 0
-        self.gameTime = datetime.datetime.now()
+        self.gameTime = dt.datetime.now()
         self.gameStatus = ""
         self.gameStatusReason = ""
         self.inningState = ""
@@ -190,9 +189,9 @@ class game:
         try:
             #  Cast JSON time format to datetime object
             #  Example "2019-03-03T18:05:00Z"
-            gtime = datetime.datetime.strptime(jsonData["gameDate"], "%Y-%m-%dT%H:%M:%SZ")
+            gtime = dt.datetime.strptime(jsonData["gameDate"], "%Y-%m-%dT%H:%M:%SZ")
             # Convert to local time zone
-            gtime = gtime.replace(tzinfo=timezone.utc).astimezone(tz=None)
+            gtime = gtime.replace(tzinfo=dt.timezone.utc).astimezone(tz=None)
             timeString = gtime.strftime("%H:%M %Z")
         except:
             timeString = "Good thing time does not exist"
@@ -614,7 +613,7 @@ class standings:
         return
 
     def tryToGetJSON(self):
-        now = datetime.datetime.now()
+        now = dt.datetime.now()
         standings_uri = base_standings_uri % (now.strftime("%Y"))
         standingsData = self.getRecordsFromURI(standings_uri)
         return standingsData

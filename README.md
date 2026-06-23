@@ -1,58 +1,59 @@
 # mlbscores
 
-mlbscores is a Python script that reads publicly available JSON data
-	from mlb.com and prints out up-to-date scores, reduced box score,
-	or league standings.
+mlbscores is a Python script that reads publicly available JSON data from mlb.com and prints out up-to-date scores, reduced box scores, or league standings.
 
-## Usage ##
+## Usage
 
-usage: mlbscores [-h] [-b] [-f] [-s] [-y | -t | -tt] [teams [teams ...]]
+      usage: mlbscores [-h] [-b] [-f] [-s] [-y | -t | -tt] [teams [teams ...]]
 
-MLB scores utility
+      MLB scores utility
 
-positional arguments:
+      positional arguments:
 
-  teams
+        teams
 
-                 Show explicit teams only specified by space separated list of
-                 case insensitive abbreviated names e.g. chc coL SF
+                       Show explicit teams only specified by space separated list of
+                       case insensitive abbreviated names e.g. chc coL SF
 
-optional arguments:
+      optional arguments:
 
-      -h, --help  show this help message and exit
-      -b          Show boxscore output for best games
-      -c          Choose team to feature in schedule and save to file
-      -f          Show full output for all games
-      -s          Show current standings
-      -y          Show for yesterday
-      -t          Show for tomorrow
-      -tt         Show for two days from now
+            -h, --help  show this help message and exit
+            -b          Show boxscore output for best games
+            -c          Choose team to feature in schedule and save to file
+            -f          Show full output for all games
+            -s          Show current standings
+            -y          Show for yesterday
+            -t          Show for tomorrow
+            -tt         Show for two days from now
 
-## Customization ##
+## Customization
 
-### Default team ###
+### Default team
+
 By default, the team displayed at the top of the schedule is
-set to the Chicago Cubs (CHI). 
+set to the Seattle Mariners (SEA).
 
-This can be changed by modifying line 29 of the script.
+This can be changed by modifying line 27 of the script.
 
-For example, to change from Chicago Cubs (CHI) to Seattle Mariners (SEA),
+For example, to change from Seattle Mariners (SEA) to Chicago Cubs (CHC),
 modify the line from:
 
-		`bestteams = ["CHC"]`
+    bestteams = ["SEA"]
 
-			to
-		`bestteams = ["SEA"]`
+      to
 
-### Schedule/Score roll-over  ###
-By default, the daily and scored rollover at 10 AM local time.
+    bestteams = ["CHC"]
 
-This can be changed by modifying line 31 of the script.
+### Schedule/Score roll-over
 
-For example, to change from 10AM to 7AM modify the line from:
+By default, the daily and scored rollover at 6 AM local time.
 
-		`daytime_rollover = 10`
+This can be changed by modifying line 30 of the script.
 
-			to
+For example, to change from 6AM to 1AM modify the line from:
 
-		`daytime_rollover = 7`
+    daytime_rollover = 6
+
+      to
+
+    daytime_rollover = 1

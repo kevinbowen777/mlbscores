@@ -4,11 +4,12 @@ version = "0.1.0"
 description = "mlbscores is a Python script that reads publicly available JSON data from mlb.com and prints out up-to-date scores, reduced box scores, and league standings."
 requires-python = ">=3.11"
 dependencies = [
+    "urllib3 (>=2.7.0,<3.0.0)"
 ]
 
 authors = [
-    {name = "Seamus Riordan",email = ""}
-    {name = "Kevin Bowen",email = "kevin.bowen@gmail.com"}
+    { name = "Seamus Riordan", email = "seamus@riordan.io" },
+    { name = "Kevin Bowen", email = "kevin.bowen@gmail.com" },
 ]
 maintainers = [
     { name = "Kevin Bowen", email = "kevin.bowen@gmail.com" },
@@ -37,6 +38,69 @@ classifiers = [
 Homepage = "https://github.com/kevinbowen777/mlbscores.git"
 Changelog = "https://github.com/kevinbowen777/mlbscores/CHANGELOG"
 Repository = "https://github.com/kevinbowen777/mlbscores.git"
+
+[dependency-groups]
+dev = [
+    "towncrier (>=25.8.0,<26.0.0)"
+]
+
+[tool.towncrier]
+directory = "changelog/"
+filename = "CHANGELOG.rst"
+
+title_format = "mlbscores {version} ({project_date})"
+issue_format = "`#{issue} <https://github.com/kevinbowen777/mlbscores/issues/{issue}>`_"
+template = "changelog/_template.rst"
+
+[[tool.towncrier.type]]
+# Something we deemed an improper undesired behavior that got corrected
+# in the release to match pre-agreed expectations.
+directory = "bugfix"
+name = "Bug fixes"
+showcontent = true
+
+[[tool.towncrier.type]]
+# Changes that affects the contributor experience. e.g. running tests,
+# building the docs, setting up the development environment.
+directory = "contrib"
+name = "Contributor-facing changes"
+showcontent = true
+
+[[tool.towncrier.type]]
+# Declarations of future API removals and breaking changes in behavior.
+directory = "deprecation"
+name = "Deprecations (removal in next major release)"
+showcontent = true
+
+[[tool.towncrier.type]]
+# Notable updates to the documentation structure or build process.
+directory = "doc"
+name = "Improved documentation"
+showcontent = true
+
+[[tool.towncrier.type]]
+# New behaviors, public APIs. That sort of stuff.
+directory = "feature"
+name = "New features"
+showcontent = true
+
+[[tool.towncrier.type]]
+# Changes that are hard to assign to any of the above categories.
+directory = "misc"
+name = "Miscellaneous internal changes"
+showcontent = true
+
+[[tool.towncrier.type]]
+# Stuff that affects security. e.g. updating packages,
+directory = "security"
+name = "Security updated"
+showcontent = true
+
+[[tool.towncrier.type]]
+# Updates regarding bundling dependencies
+directory = "vendor"
+name = "Vendored libraries"
+showcontent = true
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

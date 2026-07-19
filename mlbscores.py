@@ -17,6 +17,7 @@ try:
 except ImportError:
     USE_CERTIFI = False
     urllib3.disable_warnings()
+    print("Warning: python certifi package is missing.")
 
 # Read in favorite team from configuration file
 try:
@@ -379,7 +380,7 @@ class gameTeam:
         try:
             self.probablePitcher.stats['era'] = str(pitcherJSON['stats'][3]['stats']['era'])
         except:
-            self.probablePitcher.stats['era'] = "-"
+            self.probablePitcher.stats['era'] = "-.--"
 
     def loadBoxScore(self, jsonData):
         self.loadBatterBoxes(jsonData)
